@@ -4,6 +4,7 @@ import org.nbone.framework.spring.dao.config.JdbcComponentConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.context.support.RequestHandledListener;
 
 import javax.annotation.PostConstruct;
 
@@ -12,8 +13,8 @@ import javax.annotation.PostConstruct;
  * @version 1.0
  * @since 2019-11-15
  */
-@Configuration
-@Import({JdbcComponentConfig.class})
+@Configuration("org.nbone.sysconf.nboneConfig")
+@Import({JdbcComponentConfig.class, RequestHandledListener.class})
 public class NboneConfig {
 
     @Autowired

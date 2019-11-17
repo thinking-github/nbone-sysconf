@@ -1,8 +1,12 @@
 package org.nbone.modules.sys.entity;
 
 import org.hibernate.validator.constraints.Length;
-import org.nbone.persistence.entity.DataStateEntity;
+import org.nbone.persistence.entity.AbstractStateEntity;
+import org.nbone.persistence.entity.DynamicTableName;
+import org.springframework.util.StringUtils;
 
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.io.Serializable;
@@ -12,9 +16,12 @@ import java.io.Serializable;
  * @version 1.0
  * @since 2019-11-15
  */
-public class Group extends DataStateEntity<Group, Integer> implements Serializable {
+@Entity(name = "sys_group")
+public class Group extends AbstractStateEntity<Group, Integer> implements DynamicTableName,Serializable {
 
     private static final long serialVersionUID = 825592690549901092L;
+
+    public final static String TABLE_NAME = "sys_group";
 
     private String name;	   // 名称
     private String value;	   // 数据值
@@ -24,8 +31,15 @@ public class Group extends DataStateEntity<Group, Integer> implements Serializab
 
     private Integer sort;	   // 排序
 
-    private String parentId;   //父Id
+    private Integer parentId;   //父Id
     private Integer level;     //级别
+
+
+    /**
+     * 支持动态表和分表查询
+     */
+    @Transient
+    private transient String tableName;
 
     public Group() {
     }
@@ -97,11 +111,11 @@ public class Group extends DataStateEntity<Group, Integer> implements Serializab
     }
 
     @Length(min=1, max=100)
-    public String getParentId() {
+    public Integer getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(Integer parentId) {
         this.parentId = parentId;
     }
 
@@ -116,5 +130,19 @@ public class Group extends DataStateEntity<Group, Integer> implements Serializab
     @Override
     public String toString() {
         return label;
+    }
+
+
+    @Override
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    @Override
+    public String getTableName() {
+        if(StringUtils.hasLength(tableName)){
+            return tableName;
+        }
+        return TABLE_NAME;
     }
 }
