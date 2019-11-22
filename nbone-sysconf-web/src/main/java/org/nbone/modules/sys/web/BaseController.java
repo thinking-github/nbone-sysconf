@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
  * @version 1.0
  * @since 2019-11-14
  */
-public abstract class BaseController {
+public abstract class BaseController<T> implements  PreparedHandler<T> {
 
     /**
      * 日志对象
