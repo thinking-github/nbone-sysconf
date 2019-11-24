@@ -109,7 +109,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
         dictService.insert(dict);
         return true;
     }
-
+    @Override
     public boolean update(Dict dict,HttpServletRequest request) {
         Integer dictId = dict.getId();
         Assert.notNull(dictId, "id输入参数不能为空.");
@@ -119,11 +119,12 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
         dictService.updateSelective(dict);
         return true;
     }
+    @Override
     public boolean updateAction(Dict dict, HttpServletRequest request) {
         return update(dict,request);
     }
 
-
+    @Override
     public boolean delete(@PathVariable("id") Integer id,HttpServletRequest request) {
         Assert.notNull(id, "id输入参数不能为空.");
         preHandle(null,request);
@@ -131,12 +132,13 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
         dictService.delete(id,tableName);
         return true;
     }
-
+    @Override
     public boolean deleteAction(@RequestParam("id") Integer id,HttpServletRequest request) {
         return delete(id,request);
     }
 
     @ApiOperation(value = "查询详情信息impl",notes = "REST风格,使用PathVariable参数方式请求",response = Dict.class)
+    @Override
     public Object get(@PathVariable("id") Integer id, HttpServletRequest request) {
         Assert.notNull(id, "id输入参数不能为空.");
         preHandle(null,request);
@@ -146,6 +148,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     }
 
     @ApiOperation(value = "查询详情信息impl",notes = "传统URL风格",response = Dict.class)
+    @Override
     public Object info(Integer id,HttpServletRequest request) {
         return get(id,request);
     }
