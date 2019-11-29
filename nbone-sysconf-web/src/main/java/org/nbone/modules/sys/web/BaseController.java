@@ -1,5 +1,7 @@
 package org.nbone.modules.sys.web;
 
+import org.nbone.modules.sys.entity.Dict;
+import org.nbone.mvc.web.PreparedHandler;
 import org.nbone.persistence.entity.DynamicTableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  * @version 1.0
  * @since 2019-11-14
  */
-public abstract class BaseController<T> implements  PreparedHandler<T> {
+public abstract class BaseController<T> implements PreparedHandler<T> {
 
     /**
      * 日志对象
@@ -24,6 +26,18 @@ public abstract class BaseController<T> implements  PreparedHandler<T> {
     protected void preHandle(HttpServletRequest request, HttpServletResponse response) {
 
     }
+
+
+    @Override
+    public void saveOrUpdateBefore(T entityRequest, HttpServletRequest request) {
+
+    }
+
+    @Override
+    public void queryBefore(T entityRequest, HttpServletRequest request) {
+
+    }
+
 
     protected void setDynamicTableName(DynamicTableName dynamicTableName, HttpServletRequest request) {
         String tableName = (String) request.getAttribute(DynamicTableName.TABLE_NAME_KEY);

@@ -1,3 +1,17 @@
+CREATE TABLE sys_configuration
+(
+    id           int           NOT NULL AUTO_INCREMENT COMMENT '编号',
+    name         varchar(256)  NOT NULL COMMENT '配置参数名称',
+    value        varchar(100)  NOT NULL COMMENT '配置参数值',
+    app_id       varchar(64)   NOT NULL COMMENT 'app id',
+    package_name varchar(64)   NOT NULL COMMENT '产品包名',
+    description  varchar(100) COMMENT '描述',
+    create_time  datetime      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time  datetime      NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted      int DEFAULT 0 NOT NULL COMMENT '删除标记',
+    PRIMARY KEY (id)
+) COMMENT = '系统配置表';
+
 CREATE TABLE sys_group
 (
   id           int           NOT NULL AUTO_INCREMENT COMMENT '编号',

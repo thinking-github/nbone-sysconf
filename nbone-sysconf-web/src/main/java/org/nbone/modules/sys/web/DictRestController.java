@@ -5,6 +5,7 @@ import org.nbone.framework.spring.web.bind.annotation.ResultResponseBody;
 import org.nbone.modules.sys.entity.Dict;
 import org.nbone.modules.sys.service.DictService;
 import org.nbone.mvc.rest.ApiResponse;
+import org.nbone.mvc.web.FormController;
 import org.nbone.web.util.RequestQueryUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
@@ -45,10 +46,6 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     }
 
     @Override
-    public void saveOrUpdateBefore(Dict entityRequest, HttpServletRequest request) {
-    }
-
-    @Override
     public void updateBefore(Dict entityRequest, HttpServletRequest request) {
         entityRequest.setUpdateTime(new Date());
     }
@@ -58,10 +55,6 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
         entityRequest.setCreateTime(new Date());
     }
 
-    @Override
-    public void queryBefore(Dict entityRequest, HttpServletRequest request) {
-
-    }
 
     /**
      * @param dict
@@ -94,7 +87,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
      */
     @ApiOperation(value = ENTITY_NAME+"修改",notes = "传统URL风格,使用RequestBody参数方式请求"
             ,extensions=@Extension(properties=@ExtensionProperty(name = "update", value ="1")))
-    @JsonRequestMapping(value = "update", method = {RequestMethod.POST, RequestMethod.PUT})
+    @JsonRequestMapping(value = "update", method = {RequestMethod.POST})
     @ResultResponseBody
     public boolean updateRequestBodyAction(@RequestBody Dict dict,HttpServletRequest request) {
         return update(dict,request);
@@ -174,7 +167,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int"),
                         @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int")})
     @JsonRequestMapping(value = "page",method = {RequestMethod.GET, RequestMethod.POST})
-    public Page getPageRequestBody(@RequestBody  T dict, HttpServletRequest request) {
+    public Page<Dict> getPageRequestBody(@RequestBody  T dict, HttpServletRequest request) {
         return getPage(dict,request);
     }
 
@@ -182,7 +175,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int"),
                         @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int")})
     @FormRequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
-    public Page getPage(T dict, HttpServletRequest request) {
+    public Page<Dict> getPage(T dict, HttpServletRequest request) {
         preHandle(dict,request);
         queryBefore(dict,request);
         int pageNum = RequestQueryUtils.getPageNum(request);

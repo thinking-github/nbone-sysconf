@@ -5,6 +5,7 @@ import org.nbone.framework.spring.web.bind.annotation.ResultResponseBody;
 import org.nbone.modules.sys.entity.ResourceLanguage;
 import org.nbone.modules.sys.service.ResourceLanguageService;
 import org.nbone.mvc.rest.ApiResponse;
+import org.nbone.mvc.web.FormController;
 import org.nbone.web.util.RequestQueryUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
@@ -40,9 +41,6 @@ public class ResourceLangRestController<T extends ResourceLanguage> extends Base
         }
     }
 
-    @Override
-    public void saveOrUpdateBefore(ResourceLanguage entityRequest, HttpServletRequest request) {
-    }
 
     @Override
     public void updateBefore(ResourceLanguage entityRequest, HttpServletRequest request) {
@@ -52,11 +50,6 @@ public class ResourceLangRestController<T extends ResourceLanguage> extends Base
     @Override
     public void saveBefore(ResourceLanguage entityRequest, HttpServletRequest request) {
         entityRequest.setCreateTime(new Date());
-    }
-
-    @Override
-    public void queryBefore(ResourceLanguage entityRequest, HttpServletRequest request) {
-
     }
 
     /**
@@ -91,7 +84,7 @@ public class ResourceLangRestController<T extends ResourceLanguage> extends Base
      */
     @ApiOperation(value = ENTITY_NAME + "修改", notes = "传统URL风格,使用RequestBody参数方式请求"
             , extensions = @Extension(properties = @ExtensionProperty(name = "update", value = "1")))
-    @JsonRequestMapping(value = "update", method = {RequestMethod.POST, RequestMethod.PUT})
+    @JsonRequestMapping(value = "update", method = {RequestMethod.POST})
     @ResultResponseBody
     public boolean updateRequestBodyAction(@RequestBody ResourceLanguage resourceLanguage, HttpServletRequest request) {
         return update(resourceLanguage, request);
