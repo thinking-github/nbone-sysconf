@@ -78,6 +78,7 @@ public class ConfigurationServiceImpl extends BaseServiceDomain<Configuration, I
         Configuration configuration = appConfiguration.get(name);
         if (configuration == null) {
             logger.error("appId {} configuration parameter {} not exist.", appId, name);
+            return null;
         }
         return configuration.getValue();
     }

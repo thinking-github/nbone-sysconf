@@ -1,14 +1,15 @@
 package org.nbone.modules.sys.web;
 
-import org.nbone.modules.sys.entity.Dict;
 import org.nbone.mvc.web.PreparedHandler;
 import org.nbone.persistence.entity.DynamicTableName;
+import org.nbone.persistence.entity.TypeAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 
 /**
  * @author thinking
@@ -33,6 +34,10 @@ public abstract class BaseController<T> implements PreparedHandler<T> {
 
     }
 
+    public void disableBefore(Serializable id, HttpServletRequest request) {
+
+    }
+
     @Override
     public void queryBefore(T entityRequest, HttpServletRequest request) {
 
@@ -43,6 +48,13 @@ public abstract class BaseController<T> implements PreparedHandler<T> {
         String tableName = (String) request.getAttribute(DynamicTableName.TABLE_NAME_KEY);
         if (StringUtils.hasLength(tableName)) {
             dynamicTableName.setTableName(tableName);
+        }
+    }
+
+    protected void setResourceType(TypeAttribute typeAttribute, HttpServletRequest request) {
+        String type = (String) request.getAttribute(TypeAttribute.TYPE_KEY);
+        if (StringUtils.hasLength(type)) {
+            typeAttribute.setType(type);
         }
     }
 

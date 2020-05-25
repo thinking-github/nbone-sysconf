@@ -2,8 +2,13 @@ package org.nbone.modules.sys.web;
 
 import io.swagger.annotations.*;
 import org.nbone.framework.spring.web.bind.annotation.ResultResponseBody;
+import org.nbone.modules.sys.domain.request.DictQuery;
+import org.nbone.modules.sys.domain.request.GroupQuery;
 import org.nbone.modules.sys.entity.Dict;
+import org.nbone.modules.sys.entity.Group;
 import org.nbone.modules.sys.service.DictService;
+import org.nbone.modules.sys.service.impl.DictServiceImpl;
+import org.nbone.modules.sys.service.impl.GroupServiceImpl;
 import org.nbone.mvc.rest.ApiResponse;
 import org.nbone.mvc.web.FormController;
 import org.nbone.web.util.RequestQueryUtils;
@@ -53,6 +58,13 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     @Override
     public void saveBefore(Dict entityRequest, HttpServletRequest request) {
         entityRequest.setCreateTime(new Date());
+        if (entityRequest.getSort() == null) {
+            entityRequest.setSort(0);
+        }
+        Integer pid = entityRequest.getParentId();
+        if ((pid != null && pid != 0) && entityRequest.getLevel() == null) {
+            entityRequest.setLevel(2);
+        }
     }
 
 
@@ -94,7 +106,7 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     }
 
     @Override
-    public boolean add(Dict dict,HttpServletRequest request) {
+    public boolean add(@Valid Dict dict,HttpServletRequest request) {
         preHandle(dict,request);
         saveOrUpdateBefore(dict,request);
         saveBefore(dict,request);
@@ -115,6 +127,17 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
     @Override
     public boolean updateAction(Dict dict, HttpServletRequest request) {
         return update(dict,request);
+    }
+
+    @Override
+    public boolean patch(Dict dict, HttpServletRequest request) {
+        Integer dictId = dict.getId();
+        Assert.notNull(dictId, "id输入参数不能为空.");
+        preHandle(dict,request);
+        saveOrUpdateBefore(dict,request);
+        updateBefore(dict,request);
+        dictService.updateSelective(dict);
+        return true;
     }
 
     @Override
@@ -161,20 +184,31 @@ public class DictRestController<T extends Dict> extends BaseController<Dict> imp
         queryBefore(dict,request);
         return dictService.getForList(dict);
     }
+    @ApiOperation(value = "查询字典标识、名称列表", notes = "传统URL风格,使用Form/Query参数方式请求")
+    @FormRequestMapping(value = "names", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResultResponseBody
+    public List<Dict> dictIdNames(DictQuery dictQuery, HttpServletRequest request) {
+        Dict dict =  dictQuery.convert();
+        preHandle(dict, request);
+        queryBefore(dict, request);
+        return dictService.getForList(dict, DictServiceImpl.ENUM_FIELDS, false);
+    }
 
 
     @ApiOperation(value = "查询分页列表", notes = "传统URL风格,使用RequestBody参数方式请求")
-    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int"),
-                        @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int")})
+    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int",example = "1"),
+                        @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int",example = "20")})
     @JsonRequestMapping(value = "page",method = {RequestMethod.GET, RequestMethod.POST})
+    @ResultResponseBody
     public Page<Dict> getPageRequestBody(@RequestBody  T dict, HttpServletRequest request) {
         return getPage(dict,request);
     }
 
     @ApiOperation(value = "查询分页列表",notes = "传统URL风格,使用Form/Query参数方式请求")
-    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int"),
-                        @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int")})
+    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value ="查询页码", paramType = "query", dataType = "int",example = "1"),
+                        @ApiImplicitParam(name = "pageSize",value ="单页数量", paramType = "query", dataType = "int",example = "20")})
     @FormRequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResultResponseBody
     public Page<Dict> getPage(T dict, HttpServletRequest request) {
         preHandle(dict,request);
         queryBefore(dict,request);

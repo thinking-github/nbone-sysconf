@@ -2,15 +2,18 @@ package org.nbone.modules.sys.web;
 
 import io.swagger.annotations.*;
 import org.nbone.framework.spring.web.bind.annotation.ResultResponseBody;
+import org.nbone.modules.sys.domain.request.GroupQuery;
 import org.nbone.modules.sys.entity.Dict;
 import org.nbone.modules.sys.entity.Group;
 import org.nbone.modules.sys.service.GroupService;
+import org.nbone.modules.sys.service.impl.GroupServiceImpl;
 import org.nbone.mvc.rest.ApiResponse;
 import org.nbone.mvc.web.FormController;
 import org.nbone.web.util.RequestQueryUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -45,7 +48,6 @@ public class GroupRestController<T extends Group> extends BaseController<Group> 
         }
     }
 
-
     @Override
     public void updateBefore(Group entityRequest, HttpServletRequest request) {
         entityRequest.setUpdateTime(new Date());
@@ -54,6 +56,15 @@ public class GroupRestController<T extends Group> extends BaseController<Group> 
     @Override
     public void saveBefore(Group entityRequest, HttpServletRequest request) {
         entityRequest.setCreateTime(new Date());
+        Assert.notNull(entityRequest.getCreateBy(),"创建者不能为空!");
+
+        if (entityRequest.getSort() == null) {
+            entityRequest.setSort(0);
+        }
+        Integer pid = entityRequest.getParentId();
+        if ((pid != null && pid != 0) && entityRequest.getLevel() == null) {
+            entityRequest.setLevel(2);
+        }
     }
 
 
@@ -96,7 +107,7 @@ public class GroupRestController<T extends Group> extends BaseController<Group> 
     }
 
     @Override
-    public boolean add(Group group, HttpServletRequest request) {
+    public boolean add(@Valid Group group, HttpServletRequest request) {
         preHandle(group, request);
         saveOrUpdateBefore(group, request);
         saveBefore(group, request);
@@ -120,9 +131,21 @@ public class GroupRestController<T extends Group> extends BaseController<Group> 
     }
 
     @Override
+    public boolean patch(Group group, HttpServletRequest request) {
+        Integer dictId = group.getId();
+        Assert.notNull(dictId, "id输入参数不能为空.");
+        preHandle(group, request);
+        saveOrUpdateBefore(group, request);
+        updateBefore(group, request);
+        groupService.updateSelective(group);
+        return true;
+    }
+
+    @Override
     public boolean delete(@PathVariable("id") Integer id, HttpServletRequest request) {
         Assert.notNull(id, "id输入参数不能为空.");
         preHandle(null, request);
+        disableBefore(id,request);
         String tableName = super.getDynamicTableName(request);
         groupService.delete(id, tableName);
         return true;
@@ -163,28 +186,48 @@ public class GroupRestController<T extends Group> extends BaseController<Group> 
     public List<Group> list(T group, HttpServletRequest request) {
         preHandle(group, request);
         queryBefore(group, request);
-        return groupService.getForList(group);
+        Boolean bool = ServletRequestUtils.getBooleanParameter(request,"parent",true);
+        return groupService.getForList(group,null, bool);
+    }
+
+    @ApiOperation(value = "查询组标识、名称列表", notes = "传统URL风格,使用Form/Query参数方式请求")
+    @FormRequestMapping(value = "names", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResultResponseBody
+    public List<Group> groupIdNames(GroupQuery groupQuery, HttpServletRequest request) {
+        Group group =  groupQuery.convert();
+        preHandle(group, request);
+        queryBefore(group, request);
+        return groupService.getForList(group, GroupServiceImpl.ENUM_FIELDS, false);
     }
 
 
     @ApiOperation(value = "查询分页列表", notes = "传统URL风格,使用RequestBody参数方式请求")
-    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value = "查询页码", paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "pageSize", value = "单页数量", paramType = "query", dataType = "int")})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "pageNum", value = "查询页码", paramType = "query", dataType = "int",example = "1"),
+            @ApiImplicitParam(name = "pageSize", value = "单页数量", paramType = "query", dataType = "int",example = "20"),
+            @ApiImplicitParam(name = "orderBy", value = "排序字段", paramType = "query", dataType = "string",example = "id desc")})
     @JsonRequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
-    public Page getPageRequestBody(@RequestBody T group, HttpServletRequest request) {
+    @ResultResponseBody
+    public Page<Group> getPageRequestBody(@RequestBody T group, HttpServletRequest request) {
         return getPage(group, request);
     }
 
     @ApiOperation(value = "查询分页列表", notes = "传统URL风格,使用Form/Query参数方式请求")
-    @ApiImplicitParams({@ApiImplicitParam(name = "pageNum", value = "查询页码", paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "pageSize", value = "单页数量", paramType = "query", dataType = "int")})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "pageNum", value = "查询页码", paramType = "query", dataType = "int",example = "1"),
+            @ApiImplicitParam(name = "pageSize", value = "单页数量", paramType = "query", dataType = "int",example = "20"),
+            @ApiImplicitParam(name = "orderBy", value = "排序字段", paramType = "query", dataType = "string",example = "id desc")})
     @FormRequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
-    public Page getPage(T group, HttpServletRequest request) {
+    @ResultResponseBody
+    public Page<Group> getPage(T group, HttpServletRequest request) {
         preHandle(group, request);
         queryBefore(group, request);
         int pageNum = RequestQueryUtils.getPageNum(request);
         int pageSize = RequestQueryUtils.getPageSize(request);
-        Page page = groupService.getForPage(group, null, pageNum, pageSize);
+        //String orderBy = RequestQueryUtils.getOrderBy(request);
+        Boolean bool = ServletRequestUtils.getBooleanParameter(request,"parent",true);
+
+        Page page = groupService.getForPage(group, pageNum, pageSize,bool);
         //DataGrid<Dict> dictDataGrid =dictService.
         return page;
     }

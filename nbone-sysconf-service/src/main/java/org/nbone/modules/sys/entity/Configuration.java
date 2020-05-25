@@ -13,7 +13,7 @@ import java.util.Date;
 /**
  * @author thinking
  * @version 1.0
- * @since 2019-11-29
+ * @since 2018-11-29
  */
 @Entity(name = "sys_configuration")
 @ApiModel

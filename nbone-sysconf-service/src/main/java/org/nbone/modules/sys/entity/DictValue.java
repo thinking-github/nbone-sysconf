@@ -1,10 +1,10 @@
 package org.nbone.modules.sys.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
-import org.nbone.mvc.domain.ParentDomain;
 import org.nbone.persistence.entity.AbstractStateEntity;
 import org.nbone.persistence.entity.DynamicTableName;
 import org.springframework.util.StringUtils;
@@ -12,82 +12,77 @@ import org.springframework.util.StringUtils;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.io.Serializable;
 
 /**
+ * 字典key 对应value 的实体数据
  *
  * @author thinking
  * @version 1.0
  * @since 2018-11-15
  */
-@Entity(name = "sys_dict")
+@Entity(name = "sys_dict_value")
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @ApiModel
-public class Dict extends AbstractStateEntity<Dict,Integer>
-        implements DynamicTableName, ParentDomain<Integer>, Serializable {
+public class DictValue extends AbstractStateEntity<DictValue, Integer>
+        implements DynamicTableName, Serializable {
 
-    private static final long serialVersionUID = 3574080129436762841L;
+    private static final long serialVersionUID = 812530956843143543L;
 
-    public final static String TABLE_NAME = "sys_dict";
-    public final static String DICT_TYPE_NAME = "dict_type";
+    public final static String TABLE_NAME = "sys_dict_value";
+
+    @ApiModelProperty(value = "字典表id")
+    @Column(name = "dict_id")
+    private Integer dictId;
 
     @ApiModelProperty(value = "数据值")
-    private String value;	// 数据值
+    private String value;
+
     @ApiModelProperty(value = "显示名称")
-    private String label;	// 标签名
+    private String label;    // 标签名
 
     @ApiModelProperty(value = "描述")
     private String description;// 描述
 
     @ApiModelProperty(value = "类型")
-    private String type;	// 类型
-
-
-    @ApiModelProperty(hidden = true)
-    @Column(name = "app_id")
-    private String appId;	// app id 支持多产品
-    /**
-     *  产品包名
-     */
-    @ApiModelProperty(value = "产品包名")
-    @Column(name = "package_name")
-    private String packageName;
-
+    private String type;    // 类型
 
     @ApiModelProperty(value = "排序字段")
-    private Integer sort;	   // 排序
-
-    @ApiModelProperty(value = "上级id")
-    @Column(name = "parent_id")
-    private Integer parentId;   //父Id
-
-    @ApiModelProperty(value = "上级名称",readOnly = true)
-    @Transient
-    private String parentName;
-
-    @ApiModelProperty(value = "级别",readOnly = true)
-    private Integer level;     //级别
+    private Integer sort;       // 排序
 
     @ApiModelProperty(hidden = true)
     @JsonIgnore
     @Transient
     private transient String tableName;
 
-    public Dict() {
+    public DictValue() {
     }
 
-    public Dict(Integer id){
-        super(id,null);
+    public DictValue(Integer id) {
+        super(id, null);
     }
 
-    public Dict(String value, String label){
+    public DictValue(String value, String label) {
+        this(null, value, label);
+    }
+
+    public DictValue(Integer dictId, String value, String label) {
+        this.dictId = dictId;
         this.value = value;
         this.label = label;
     }
 
+    public Integer getDictId() {
+        return dictId;
+    }
+
+    public void setDictId(Integer dictId) {
+        this.dictId = dictId;
+    }
+
     @XmlAttribute
-    @Length(min=1, max=100)
+    @Length(min = 1, max = 100)
     public String getValue() {
         return value;
     }
@@ -97,7 +92,7 @@ public class Dict extends AbstractStateEntity<Dict,Integer>
     }
 
     @XmlAttribute
-    @Length(min=1, max=100)
+    @Length(min = 1, max = 100)
     public String getLabel() {
         return label;
     }
@@ -106,7 +101,7 @@ public class Dict extends AbstractStateEntity<Dict,Integer>
         this.label = label;
     }
 
-    @Length(min=1, max=100)
+    @Length(min = 1, max = 32)
     public String getType() {
         return type;
     }
@@ -115,30 +110,14 @@ public class Dict extends AbstractStateEntity<Dict,Integer>
         this.type = type;
     }
 
-    @ApiModelProperty(value =  "状态 0:禁用 1:启用" ,allowableValues = "0,1")
+    @ApiModelProperty(value = "状态 0:禁用 1:启用", allowableValues = "0,1")
     @Override
     public Integer getStatus() {
         return super.getStatus();
     }
 
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
     @XmlAttribute
-    @Length(min=0, max=100)
+    @Length(min = 0, max = 100)
     public String getDescription() {
         return description;
     }
@@ -155,33 +134,9 @@ public class Dict extends AbstractStateEntity<Dict,Integer>
         this.sort = sort;
     }
 
-    public Integer getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Integer parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getParentName() {
-        return parentName;
-    }
-
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
-    }
-
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Dict{");
+        final StringBuilder sb = new StringBuilder("DictValue{");
         sb.append("value='").append(value).append('\'');
         sb.append(", label='").append(label).append('\'');
         sb.append(", type='").append(type).append('\'');
@@ -196,7 +151,7 @@ public class Dict extends AbstractStateEntity<Dict,Integer>
 
     @Override
     public String getTableName() {
-        if(StringUtils.hasLength(tableName)){
+        if (StringUtils.hasLength(tableName)) {
             return tableName;
         }
         return TABLE_NAME;

@@ -1,6 +1,7 @@
 package org.nbone.modules.sys.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.nbone.mvc.domain.ParentDomain;
@@ -11,47 +12,55 @@ import org.springframework.util.StringUtils;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.io.Serializable;
+import java.util.List;
 
 /**
+ * 字典主表实体（只包含字典key 不含有值）
+ *
  * @author thinking
  * @version 1.0
  * @since 2018-11-15
  */
-@Entity(name = "sys_group")
-public class Group extends AbstractStateEntity<Group, Integer>
-        implements DynamicTableName, ParentDomain<Integer>,Serializable {
+@Entity(name = "sys_dict_info")
+@ApiModel
+public class DictInfo extends AbstractStateEntity<DictInfo,Integer>
+        implements DynamicTableName, ParentDomain<Integer>, Serializable {
 
-    private static final long serialVersionUID = 825592690549901092L;
+    private static final long serialVersionUID = 8692888003633770930L;
 
-    public final static String TABLE_NAME = "sys_group";
-    public final static String GROUP_TYPE_NAME = "group_type";
+    public final static String TABLE_NAME = "sys_dict_info";
+    public final static String DICT_TYPE_NAME = "dict_type";
 
-    @ApiModelProperty(value = "名称")
-    private String name;	   // 名称
+/*    @ApiModelProperty(value = "数据值")
+    private String value;	// 数据值*/
 
-    @Transient
-    private String value;	   // 数据值
-    @Transient
-    private String label;	   // 标签名
+    @ApiModelProperty(value = "字典key")
+    private String name;	// 字典key
+
+    @ApiModelProperty(value = "显示名称")
+    private String label;	// 标签名
 
     @ApiModelProperty(value = "描述")
     private String description;// 描述
+
     @ApiModelProperty(value = "类型")
-    private String type;	   // 类型
+    private String type;	// 类型
+
+    @ApiModelProperty(value = "模式")
+    private String mode;
+
 
     @ApiModelProperty(hidden = true)
     @Column(name = "app_id")
-    private String appId;	// app id 支持多产品
+    private String appId;
     /**
      *  产品包名
      */
     @ApiModelProperty(value = "产品包名")
     @Column(name = "package_name")
     private String packageName;
-
 
 
     @ApiModelProperty(value = "排序字段")
@@ -65,34 +74,31 @@ public class Group extends AbstractStateEntity<Group, Integer>
     @Transient
     private String parentName;
 
-
     @ApiModelProperty(value = "级别",readOnly = true)
+    @Transient
     private Integer level;     //级别
 
+    @ApiModelProperty(value = "字典对应的值列表")
+    @Transient
+    private List<DictValue> values;
 
-    /**
-     * 支持动态表和分表查询
-     */
     @ApiModelProperty(hidden = true)
     @JsonIgnore
     @Transient
     private transient String tableName;
 
-    @ApiModelProperty(value = "查询排序",readOnly = true)
-    @Transient
-    private String orderBy;
-
-    public Group() {
+    public DictInfo() {
     }
 
-    public Group(Integer id){
+    public DictInfo(Integer id){
         super(id,null);
     }
 
-    public Group(String value, String label){
-        this.value = value;
+    public DictInfo(String name, String label){
+        this.name = name;
         this.label = label;
     }
+
     @XmlAttribute
     @Length(min=1, max=100)
     public String getName() {
@@ -105,16 +111,6 @@ public class Group extends AbstractStateEntity<Group, Integer>
 
     @XmlAttribute
     @Length(min=1, max=100)
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @XmlAttribute
-    @Length(min=1, max=100)
     public String getLabel() {
         return label;
     }
@@ -123,13 +119,22 @@ public class Group extends AbstractStateEntity<Group, Integer>
         this.label = label;
     }
 
-    @Length(min=1, max=100)
+    @Length(min=1, max=32)
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Length(min=1, max=32)
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
     @ApiModelProperty(value =  "状态 0:禁用 1:启用" ,allowableValues = "0,1")
@@ -196,11 +201,18 @@ public class Group extends AbstractStateEntity<Group, Integer>
         this.level = level;
     }
 
+    public List<DictValue> getValues() {
+        return values;
+    }
+
+    public void setValues(List<DictValue> values) {
+        this.values = values;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Group{");
+        final StringBuilder sb = new StringBuilder("DictInfo{");
         sb.append("name='").append(name).append('\'');
-        sb.append(", value='").append(value).append('\'');
         sb.append(", label='").append(label).append('\'');
         sb.append(", type='").append(type).append('\'');
         sb.append('}');
@@ -218,13 +230,5 @@ public class Group extends AbstractStateEntity<Group, Integer>
             return tableName;
         }
         return TABLE_NAME;
-    }
-
-    public String getOrderBy() {
-        return orderBy;
-    }
-
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
     }
 }
