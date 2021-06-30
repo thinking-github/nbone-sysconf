@@ -51,7 +51,7 @@ public class ConfigurationServiceImpl extends BaseServiceDomain<Configuration, I
         Assert.notNull(appId, "appId must not be null.");
         Assert.notNull(name, "configuration name must not be null.");
         Configuration query = new Configuration(appId, name);
-        Configuration configuration = namedJdbcDao.getOne(query);
+        Configuration configuration = namedJdbcDao.getOne(query,null);
         Map<String, Configuration> appConfiguration = this.configuration.get(appId);
         if (appConfiguration != null) {
             appConfiguration.put(name, configuration);
